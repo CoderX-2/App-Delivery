@@ -14,4 +14,13 @@ object Validators {
 
     fun password(v: String): String? =
         if (v.length < 6) "La contraseña debe tener al menos 6 caracteres" else null
+
+    fun addressLabel(v: String): String? =
+        if (v.trim().length < 2) "Ingresa un nombre (ej. Casa, Trabajo)" else null
+
+    fun street(v: String): String? =
+        if (v.trim().length < 5) "Ingresa la calle y número (mínimo 5 caracteres)" else null
+
+    fun city(v: String): String? =
+        if (v.trim().length < 2) "Ingresa la ciudad" else null
 }

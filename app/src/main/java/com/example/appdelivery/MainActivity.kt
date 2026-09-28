@@ -1,6 +1,7 @@
 package com.example.appdelivery
 
 import android.os.Bundle
+import com.example.appdelivery.data.db.AppDatabase
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,6 +17,7 @@ import com.example.appdelivery.ui.theme.AppDeliveryTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppDatabase.getInstance(this).openHelper.writableDatabase
         enableEdgeToEdge()
         setContent {
             AppDeliveryTheme {

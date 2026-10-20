@@ -43,6 +43,7 @@ fun ProfileScreen(
     onEditProfile: () -> Unit,
     onAddAddress: () -> Unit,
     onEditAddress: (Long) -> Unit,
+    onOpenRestaurants: () -> Unit,
     onLogout: () -> Unit
 ) {
     val customer by vm.customer.collectAsStateWithLifecycle()
@@ -79,6 +80,9 @@ fun ProfileScreen(
                         Text("Tel: ${customer?.phone ?: ""}", style = MaterialTheme.typography.bodyMedium)
                         OutlinedButton(onClick = onEditProfile, modifier = Modifier.padding(top = 8.dp)) {
                             Text("Editar perfil")
+                        }
+                        OutlinedButton(onClick = onOpenRestaurants) {
+                            Text("Ver restaurantes")
                         }
                     }
                 }

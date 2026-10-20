@@ -18,3 +18,4 @@ build/
 .gradle/
 .idea/
 *.iml
+app/google-services.json

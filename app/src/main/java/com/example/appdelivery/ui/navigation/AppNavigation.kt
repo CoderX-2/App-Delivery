@@ -17,6 +17,9 @@ import androidx.navigation.navArgument
 import com.example.appdelivery.data.session.SessionManager
 import com.example.appdelivery.ui.auth.LoginScreen
 import com.example.appdelivery.ui.auth.RegisterScreen
+import com.example.appdelivery.ui.catalog.CatalogViewModel
+import com.example.appdelivery.ui.catalog.MenuScreen
+import com.example.appdelivery.ui.catalog.RestaurantListScreen
 import com.example.appdelivery.ui.profile.AddressFormScreen
 import com.example.appdelivery.ui.profile.EditProfileScreen
 import com.example.appdelivery.ui.profile.ProfileScreen
@@ -29,6 +32,9 @@ object Routes {
     const val REGISTER = "register"
     const val PROFILE = "profile"
     const val EDIT_PROFILE = "edit_profile"
+    const val RESTAURANTS = "restaurants"
+    const val MENU = "menu/{restaurantId}"
+    fun menu(id: Long) = "menu/$id"
     const val ADDRESS_FORM = "address_form?addressId={addressId}"
     fun addressForm(id: Long? = null) =
         if (id == null) "address_form" else "address_form?addressId=$id"
@@ -40,6 +46,7 @@ fun AppNavigation() {
     val session = remember { SessionManager(context.applicationContext) }
     val scope = rememberCoroutineScope()
     val profileVm: ProfileViewModel = viewModel()
+    val catalogVm: CatalogViewModel = viewModel()
     var startDestination by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -72,6 +79,7 @@ fun AppNavigation() {
                 onEditProfile = { nav.navigate(Routes.EDIT_PROFILE) },
                 onAddAddress = { nav.navigate(Routes.addressForm()) },
                 onEditAddress = { id -> nav.navigate(Routes.addressForm(id)) },
+                onOpenRestaurants = { nav.navigate(Routes.RESTAURANTS) },
                 onLogout = {
                     scope.launch {
                         session.clear()
@@ -92,6 +100,20 @@ fun AppNavigation() {
         ) { entry ->
             val id = entry.arguments?.getLong("addressId")?.takeIf { it != -1L }
             AddressFormScreen(vm = profileVm, addressId = id, onDone = { nav.popBackStack() })
+        }
+        composable(Routes.RESTAURANTS) {
+            RestaurantListScreen(
+                vm = catalogVm,
+                onOpenMenu = { id -> nav.navigate(Routes.menu(id)) },
+                onBack = { nav.popBackStack() }
+            )
+        }
+        composable(
+            route = Routes.MENU,
+            arguments = listOf(navArgument("restaurantId") { type = NavType.LongType })
+        ) { entry ->
+            val id = entry.arguments?.getLong("restaurantId") ?: return@composable
+            MenuScreen(vm = catalogVm, restaurantId = id, onBack = { nav.popBackStack() })
         }
     }
 }

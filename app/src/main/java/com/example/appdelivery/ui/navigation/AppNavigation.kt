@@ -22,6 +22,8 @@ import com.example.appdelivery.ui.catalog.MenuScreen
 import com.example.appdelivery.ui.catalog.RestaurantListScreen
 import com.example.appdelivery.ui.catalog.SearchScreen
 import com.example.appdelivery.ui.catalog.SearchViewModel
+import com.example.appdelivery.ui.map.MapScreen
+import com.example.appdelivery.ui.map.MapViewModel
 import com.example.appdelivery.ui.profile.AddressFormScreen
 import com.example.appdelivery.ui.profile.EditProfileScreen
 import com.example.appdelivery.ui.profile.ProfileScreen
@@ -36,6 +38,7 @@ object Routes {
     const val EDIT_PROFILE = "edit_profile"
     const val RESTAURANTS = "restaurants"
     const val SEARCH = "search"
+    const val MAP = "map"
     const val MENU = "menu/{restaurantId}"
     fun menu(id: Long) = "menu/$id"
     const val ADDRESS_FORM = "address_form?addressId={addressId}"
@@ -51,6 +54,7 @@ fun AppNavigation() {
     val profileVm: ProfileViewModel = viewModel()
     val catalogVm: CatalogViewModel = viewModel()
     val searchVm: SearchViewModel = viewModel()
+    val mapVm: MapViewModel = viewModel()
     var startDestination by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -110,6 +114,7 @@ fun AppNavigation() {
                 vm = catalogVm,
                 onOpenMenu = { id -> nav.navigate(Routes.menu(id)) },
                 onSearch = { nav.navigate(Routes.SEARCH) },
+                onOpenMap = { nav.navigate(Routes.MAP) },
                 onBack = { nav.popBackStack() }
             )
         }
@@ -123,6 +128,13 @@ fun AppNavigation() {
         composable(Routes.SEARCH) {
             SearchScreen(
                 vm = searchVm,
+                onOpenMenu = { id -> nav.navigate(Routes.menu(id)) },
+                onBack = { nav.popBackStack() }
+            )
+        }
+        composable(Routes.MAP) {
+            MapScreen(
+                vm = mapVm,
                 onOpenMenu = { id -> nav.navigate(Routes.menu(id)) },
                 onBack = { nav.popBackStack() }
             )

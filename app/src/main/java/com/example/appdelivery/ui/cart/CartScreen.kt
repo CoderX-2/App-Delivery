@@ -53,7 +53,7 @@ fun CartScreen(
     val selectedAddress by vm.selectedAddress.collectAsStateWithLifecycle()
     val addresses by vm.addresses.collectAsStateWithLifecycle()
     val restaurant by vm.currentRestaurant.collectAsStateWithLifecycle()
-    val subtotal = items.sumOf { it.price * it.quantity }
+    val totals by vm.totals.collectAsStateWithLifecycle()
     var showAddressDialog by remember { mutableStateOf(false) }
 
     if (showAddressDialog) {
@@ -134,7 +134,7 @@ fun CartScreen(
                 // Sección según modalidad
                 if (deliveryMode == DeliveryMode.DELIVERY) {
                     Card(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         Column(Modifier.padding(12.dp)) {
@@ -171,7 +171,7 @@ fun CartScreen(
                     }
                 } else {
                     Card(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -195,10 +195,38 @@ fun CartScreen(
                     }
                 }
 
+                // Desglose de precios (AD-76)
                 HorizontalDivider()
-                Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Subtotal", style = MaterialTheme.typography.titleMedium)
-                    Text("$" + "%.2f".format(subtotal), style = MaterialTheme.typography.titleMedium)
+                Column(
+                    Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Subtotal", style = MaterialTheme.typography.bodyMedium)
+                        Text("$" + "%.2f".format(totals.subtotal), style = MaterialTheme.typography.bodyMedium)
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        val feeLabel = if (deliveryMode == DeliveryMode.PICKUP) {
+                            "Costo de entrega (Recogida)"
+                        } else {
+                            totals.distanceKm?.let { "Costo de envío (%.1f km)".format(it) } ?: "Costo de envío base"
+                        }
+                        Text(feeLabel, style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            if (deliveryMode == DeliveryMode.PICKUP) "Gratis ($0.00)" else "$" + "%.2f".format(totals.deliveryFee),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (deliveryMode == DeliveryMode.PICKUP) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Total", style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            "$" + "%.2f".format(totals.total),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }

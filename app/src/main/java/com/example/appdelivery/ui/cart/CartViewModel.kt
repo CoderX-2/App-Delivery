@@ -13,10 +13,13 @@ import com.example.appdelivery.data.repository.AddResult
 import com.example.appdelivery.data.repository.CartRepository
 import com.example.appdelivery.data.repository.CartRepositoryImpl
 import com.example.appdelivery.data.session.SessionManager
+import com.example.appdelivery.util.CartCalculator
+import com.example.appdelivery.util.CartTotals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -54,6 +57,15 @@ class CartViewModel(app: Application) : AndroidViewModel(app) {
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val totals: StateFlow<CartTotals> = combine(
+        items,
+        deliveryMode,
+        currentRestaurant,
+        selectedAddress
+    ) { currentItems, mode, restaurant, address ->
+        CartCalculator.calculate(currentItems, mode, restaurant, address)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CartTotals(0.0, 0.0, 0.0))
 
     init {
         viewModelScope.launch {

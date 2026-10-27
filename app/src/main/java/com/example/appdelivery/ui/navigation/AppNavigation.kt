@@ -27,6 +27,10 @@ import com.example.appdelivery.ui.catalog.SearchScreen
 import com.example.appdelivery.ui.catalog.SearchViewModel
 import com.example.appdelivery.ui.map.MapScreen
 import com.example.appdelivery.ui.map.MapViewModel
+import com.example.appdelivery.ui.order.OrderDetailScreen
+import com.example.appdelivery.ui.order.OrderSummaryScreen
+import com.example.appdelivery.ui.order.OrderViewModel
+import com.example.appdelivery.ui.order.OrdersScreen
 import com.example.appdelivery.ui.payment.PaymentScreen
 import com.example.appdelivery.ui.payment.PaymentViewModel
 import com.example.appdelivery.ui.profile.AddressFormScreen
@@ -46,6 +50,10 @@ object Routes {
     const val MAP = "map"
     const val CART = "cart"
     const val PAYMENT = "payment"
+    const val ORDER_SUMMARY = "order_summary"
+    const val ORDERS = "orders"
+    const val ORDER_DETAIL = "order_detail/{orderId}"
+    fun orderDetail(orderId: String) = "order_detail/$orderId"
     const val MENU = "menu/{restaurantId}"
     fun menu(id: Long) = "menu/$id"
     const val ADDRESS_FORM = "address_form?addressId={addressId}"
@@ -64,6 +72,7 @@ fun AppNavigation() {
     val mapVm: MapViewModel = viewModel()
     val cartVm: CartViewModel = viewModel()
     val paymentVm: PaymentViewModel = viewModel()
+    val orderVm: OrderViewModel = viewModel()
     var startDestination by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -97,6 +106,7 @@ fun AppNavigation() {
                 onAddAddress = { nav.navigate(Routes.addressForm()) },
                 onEditAddress = { id -> nav.navigate(Routes.addressForm(id)) },
                 onOpenRestaurants = { nav.navigate(Routes.RESTAURANTS) },
+                onOpenOrders = { nav.navigate(Routes.ORDERS) },
                 onLogout = {
                     scope.launch {
                         session.clear()
@@ -154,9 +164,67 @@ fun AppNavigation() {
                 vm = paymentVm,
                 totalAmount = totals.total,
                 onBack = { nav.popBackStack() },
-                onPaymentSuccess = {
-                    nav.popBackStack()
+                onPaymentSuccess = { success ->
+                    orderVm.pendingPaymentResult.value = success
+                    nav.navigate(Routes.ORDER_SUMMARY)
                 }
+            )
+        }
+        composable(Routes.ORDER_SUMMARY) {
+            val paymentResult by orderVm.pendingPaymentResult.collectAsStateWithLifecycle()
+            val items by cartVm.items.collectAsStateWithLifecycle()
+            val totals by cartVm.totals.collectAsStateWithLifecycle()
+            val mode by cartVm.deliveryMode.collectAsStateWithLifecycle()
+            val address by cartVm.selectedAddress.collectAsStateWithLifecycle()
+            val restaurant by cartVm.currentRestaurant.collectAsStateWithLifecycle()
+
+            val payment = paymentResult
+            if (payment == null || items.isEmpty()) {
+                LaunchedEffect(Unit) { nav.popBackStack() }
+            } else {
+                OrderSummaryScreen(
+                    items = items,
+                    totals = totals,
+                    deliveryMode = mode,
+                    selectedAddress = address,
+                    restaurant = restaurant,
+                    paymentResult = payment,
+                    onConfirm = {
+                        orderVm.placeOrder(
+                            items = items,
+                            totals = totals,
+                            mode = mode,
+                            restaurant = restaurant,
+                            address = address,
+                            payment = payment
+                        ) { orderId ->
+                            nav.navigate(Routes.orderDetail(orderId)) {
+                                popUpTo(Routes.RESTAURANTS)
+                            }
+                        }
+                    },
+                    onBack = { nav.popBackStack() }
+                )
+            }
+        }
+        composable(
+            route = Routes.ORDER_DETAIL,
+            arguments = listOf(navArgument("orderId") { type = NavType.StringType })
+        ) { entry ->
+            val id = entry.arguments?.getString("orderId") ?: return@composable
+            OrderDetailScreen(
+                orderId = id,
+                orderVm = orderVm,
+                onOpenOrders = { nav.navigate(Routes.ORDERS) },
+                onGoToHome = { nav.navigate(Routes.RESTAURANTS) { popUpTo(Routes.RESTAURANTS) { inclusive = true } } },
+                onBack = { nav.popBackStack() }
+            )
+        }
+        composable(Routes.ORDERS) {
+            OrdersScreen(
+                vm = orderVm,
+                onOpenOrder = { id -> nav.navigate(Routes.orderDetail(id)) },
+                onBack = { nav.popBackStack() }
             )
         }
         composable(Routes.SEARCH) {

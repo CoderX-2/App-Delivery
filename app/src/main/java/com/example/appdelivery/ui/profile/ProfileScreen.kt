@@ -2,6 +2,7 @@ package com.example.appdelivery.ui.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,6 +45,7 @@ fun ProfileScreen(
     onAddAddress: () -> Unit,
     onEditAddress: (Long) -> Unit,
     onOpenRestaurants: () -> Unit,
+    onOpenOrders: () -> Unit,
     onLogout: () -> Unit
 ) {
     val customer by vm.customer.collectAsStateWithLifecycle()
@@ -69,7 +71,7 @@ fun ProfileScreen(
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
@@ -80,6 +82,9 @@ fun ProfileScreen(
                         Text("Tel: ${customer?.phone ?: ""}", style = MaterialTheme.typography.bodyMedium)
                         OutlinedButton(onClick = onEditProfile, modifier = Modifier.padding(top = 8.dp)) {
                             Text("Editar perfil")
+                        }
+                        OutlinedButton(onClick = onOpenOrders) {
+                            Text("Mis pedidos")
                         }
                         OutlinedButton(onClick = onOpenRestaurants) {
                             Text("Ver restaurantes")

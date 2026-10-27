@@ -1,5 +1,10 @@
 package com.example.appdelivery.data.db
 
+import com.example.appdelivery.data.dao.OrderDao
+import com.example.appdelivery.data.entity.Order
+import com.example.appdelivery.data.entity.OrderItem
+
+
 import com.example.appdelivery.data.dao.CartDao
 import com.example.appdelivery.data.entity.CartItem
 
@@ -19,11 +24,13 @@ import com.example.appdelivery.data.entity.Restaurant
 import com.example.appdelivery.util.PasswordHasher
 
 @Database(
-    entities = [CartItem::class, Customer::class, Address::class, Restaurant::class, Dish::class],
-    version = 4,
+    entities = [Order::class, OrderItem::class, CartItem::class, Customer::class, Address::class, Restaurant::class, Dish::class],
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
+    abstract fun orderDao(): OrderDao
+
     abstract fun cartDao(): CartDao
 
     abstract fun customerDao(): CustomerDao

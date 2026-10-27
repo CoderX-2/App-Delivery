@@ -1,5 +1,8 @@
 package com.example.appdelivery.data.db
 
+import com.example.appdelivery.data.dao.CartDao
+import com.example.appdelivery.data.entity.CartItem
+
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
@@ -16,11 +19,13 @@ import com.example.appdelivery.data.entity.Restaurant
 import com.example.appdelivery.util.PasswordHasher
 
 @Database(
-    entities = [Customer::class, Address::class, Restaurant::class, Dish::class],
-    version = 2,
+    entities = [CartItem::class, Customer::class, Address::class, Restaurant::class, Dish::class],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
+    abstract fun cartDao(): CartDao
+
     abstract fun customerDao(): CustomerDao
     abstract fun addressDao(): AddressDao
     abstract fun restaurantDao(): RestaurantDao

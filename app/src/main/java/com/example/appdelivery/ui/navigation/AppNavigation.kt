@@ -17,6 +17,8 @@ import androidx.navigation.navArgument
 import com.example.appdelivery.data.session.SessionManager
 import com.example.appdelivery.ui.auth.LoginScreen
 import com.example.appdelivery.ui.auth.RegisterScreen
+import com.example.appdelivery.ui.cart.CartScreen
+import com.example.appdelivery.ui.cart.CartViewModel
 import com.example.appdelivery.ui.catalog.CatalogViewModel
 import com.example.appdelivery.ui.catalog.MenuScreen
 import com.example.appdelivery.ui.catalog.RestaurantListScreen
@@ -39,6 +41,7 @@ object Routes {
     const val RESTAURANTS = "restaurants"
     const val SEARCH = "search"
     const val MAP = "map"
+    const val CART = "cart"
     const val MENU = "menu/{restaurantId}"
     fun menu(id: Long) = "menu/$id"
     const val ADDRESS_FORM = "address_form?addressId={addressId}"
@@ -55,6 +58,7 @@ fun AppNavigation() {
     val catalogVm: CatalogViewModel = viewModel()
     val searchVm: SearchViewModel = viewModel()
     val mapVm: MapViewModel = viewModel()
+    val cartVm: CartViewModel = viewModel()
     var startDestination by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -123,7 +127,16 @@ fun AppNavigation() {
             arguments = listOf(navArgument("restaurantId") { type = NavType.LongType })
         ) { entry ->
             val id = entry.arguments?.getLong("restaurantId") ?: return@composable
-            MenuScreen(vm = catalogVm, restaurantId = id, onBack = { nav.popBackStack() })
+            MenuScreen(
+                vm = catalogVm,
+                cartVm = cartVm,
+                restaurantId = id,
+                onOpenCart = { nav.navigate(Routes.CART) },
+                onBack = { nav.popBackStack() }
+            )
+        }
+        composable(Routes.CART) {
+            CartScreen(vm = cartVm, onBack = { nav.popBackStack() })
         }
         composable(Routes.SEARCH) {
             SearchScreen(

@@ -9,8 +9,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.appdelivery.data.db.AppDatabase
 import com.example.appdelivery.data.entity.Address
 import com.example.appdelivery.data.entity.Customer
+import com.example.appdelivery.data.repository.LocationRepository
 import com.example.appdelivery.data.repository.ProfileRepository
 import com.example.appdelivery.data.session.SessionManager
+import com.example.appdelivery.util.GeoPoint
 import com.example.appdelivery.util.Validators
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,6 +28,7 @@ class ProfileViewModel(app: Application) : AndroidViewModel(app) {
     private val db = AppDatabase.getInstance(app)
     private val repo = ProfileRepository(db.customerDao(), db.addressDao())
     private val session = SessionManager(app)
+    private val locationRepo = LocationRepository(app)
 
     val customer: StateFlow<Customer?> = session.userId
         .flatMapLatest { id -> if (id == null) flowOf(null) else repo.observeCustomer(id) }
@@ -41,6 +44,8 @@ class ProfileViewModel(app: Application) : AndroidViewModel(app) {
     fun clearErrors() {
         formErrors = emptyMap()
     }
+
+    suspend fun getCurrentLocation(): GeoPoint? = locationRepo.getCurrentLocation()
 
     fun updateProfile(name: String, phone: String, onSuccess: () -> Unit) {
         val errors = buildMap<String, String> {
@@ -60,7 +65,8 @@ class ProfileViewModel(app: Application) : AndroidViewModel(app) {
 
     fun saveAddress(
         addressId: Long?, label: String, street: String, city: String,
-        reference: String, onSuccess: () -> Unit
+        reference: String, onSuccess: () -> Unit,
+        latitude: Double? = null, longitude: Double? = null
     ) {
         val errors = buildMap<String, String> {
             Validators.addressLabel(label)?.let { put("label", it) }
@@ -77,7 +83,9 @@ class ProfileViewModel(app: Application) : AndroidViewModel(app) {
                 label = label.trim(),
                 street = street.trim(),
                 city = city.trim(),
-                reference = reference.trim()
+                reference = reference.trim(),
+                latitude = latitude,
+                longitude = longitude
             )
             if (addressId == null) repo.addAddress(address) else repo.updateAddress(address)
             onSuccess()

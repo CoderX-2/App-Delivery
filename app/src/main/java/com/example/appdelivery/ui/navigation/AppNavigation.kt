@@ -136,7 +136,7 @@ fun AppNavigation() {
             )
         }
         composable(Routes.CART) {
-            CartScreen(vm = cartVm, onBack = { nav.popBackStack() })
+            CartScreen(vm = cartVm, onBack = { nav.popBackStack() }, onAddAddress = { nav.navigate(Routes.addressForm()) })
         }
         composable(Routes.SEARCH) {
             SearchScreen(

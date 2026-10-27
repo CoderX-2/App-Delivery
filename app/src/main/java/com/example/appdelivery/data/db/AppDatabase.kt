@@ -20,7 +20,7 @@ import com.example.appdelivery.util.PasswordHasher
 
 @Database(
     entities = [CartItem::class, Customer::class, Address::class, Restaurant::class, Dish::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -124,10 +124,10 @@ abstract class AppDatabase : RoomDatabase() {
                     arrayOf("Cliente Demo", "demo@delivery.com", "5512345678", hash, salt)
                 )
                 db.execSQL(
-                    "INSERT INTO addresses (customerId, label, street, city, reference) VALUES (1, 'Casa', 'Av. Reforma 123', 'Cuautitlán Izcalli', 'Portón negro')"
+                    "INSERT INTO addresses (customerId, label, street, city, reference, latitude, longitude) VALUES (1, 'Casa', 'Av. Reforma 123', 'Cuautitlán Izcalli', 'Portón negro', 19.6450, -99.2150)"
                 )
                 db.execSQL(
-                    "INSERT INTO addresses (customerId, label, street, city, reference) VALUES (1, 'Trabajo', 'Calle Hidalgo 45', 'Cuautitlán Izcalli', 'Piso 2')"
+                    "INSERT INTO addresses (customerId, label, street, city, reference, latitude, longitude) VALUES (1, 'Trabajo', 'Calle Hidalgo 45', 'Cuautitlán Izcalli', 'Piso 2', 19.6500, -99.2100)"
                 )
                 seedCatalog(db)
             }

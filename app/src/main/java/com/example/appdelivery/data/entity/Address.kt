@@ -21,5 +21,7 @@ data class Address(
     val label: String,
     val street: String,
     val city: String,
-    val reference: String = ""
+    val reference: String = "",
+    val latitude: Double? = null,
+    val longitude: Double? = null
 )

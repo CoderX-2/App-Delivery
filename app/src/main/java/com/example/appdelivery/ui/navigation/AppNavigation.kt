@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -26,6 +27,8 @@ import com.example.appdelivery.ui.catalog.SearchScreen
 import com.example.appdelivery.ui.catalog.SearchViewModel
 import com.example.appdelivery.ui.map.MapScreen
 import com.example.appdelivery.ui.map.MapViewModel
+import com.example.appdelivery.ui.payment.PaymentScreen
+import com.example.appdelivery.ui.payment.PaymentViewModel
 import com.example.appdelivery.ui.profile.AddressFormScreen
 import com.example.appdelivery.ui.profile.EditProfileScreen
 import com.example.appdelivery.ui.profile.ProfileScreen
@@ -42,6 +45,7 @@ object Routes {
     const val SEARCH = "search"
     const val MAP = "map"
     const val CART = "cart"
+    const val PAYMENT = "payment"
     const val MENU = "menu/{restaurantId}"
     fun menu(id: Long) = "menu/$id"
     const val ADDRESS_FORM = "address_form?addressId={addressId}"
@@ -59,6 +63,7 @@ fun AppNavigation() {
     val searchVm: SearchViewModel = viewModel()
     val mapVm: MapViewModel = viewModel()
     val cartVm: CartViewModel = viewModel()
+    val paymentVm: PaymentViewModel = viewModel()
     var startDestination by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -136,7 +141,23 @@ fun AppNavigation() {
             )
         }
         composable(Routes.CART) {
-            CartScreen(vm = cartVm, onBack = { nav.popBackStack() }, onAddAddress = { nav.navigate(Routes.addressForm()) })
+            CartScreen(
+                vm = cartVm,
+                onBack = { nav.popBackStack() },
+                onAddAddress = { nav.navigate(Routes.addressForm()) },
+                onProceedToPayment = { nav.navigate(Routes.PAYMENT) }
+            )
+        }
+        composable(Routes.PAYMENT) {
+            val totals by cartVm.totals.collectAsStateWithLifecycle()
+            PaymentScreen(
+                vm = paymentVm,
+                totalAmount = totals.total,
+                onBack = { nav.popBackStack() },
+                onPaymentSuccess = {
+                    nav.popBackStack()
+                }
+            )
         }
         composable(Routes.SEARCH) {
             SearchScreen(

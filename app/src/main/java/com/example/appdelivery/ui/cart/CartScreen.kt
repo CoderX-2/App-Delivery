@@ -46,7 +46,8 @@ import com.example.appdelivery.data.model.DeliveryMode
 fun CartScreen(
     vm: CartViewModel,
     onBack: () -> Unit,
-    onAddAddress: () -> Unit = {}
+    onAddAddress: () -> Unit = {},
+    onProceedToPayment: () -> Unit = {}
 ) {
     val items by vm.items.collectAsStateWithLifecycle()
     val deliveryMode by vm.deliveryMode.collectAsStateWithLifecycle()
@@ -226,6 +227,13 @@ fun CartScreen(
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
+                    }
+                    Button(
+                        onClick = onProceedToPayment,
+                        enabled = items.isNotEmpty() && vm.isModeValid(),
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                    ) {
+                        Text("Continuar al pago")
                     }
                 }
             }

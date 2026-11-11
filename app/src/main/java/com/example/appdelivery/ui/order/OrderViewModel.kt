@@ -29,14 +29,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class OrderViewModel(
-    app: Application,
-    private val repo: OrderRepository = OrderRepositoryImpl(
-        AppDatabase.getInstance(app).orderDao(),
-        AppDatabase.getInstance(app).cartDao()
-    )
-) : AndroidViewModel(app) {
+class OrderViewModel(app: Application) : AndroidViewModel(app) {
 
+    private val db = AppDatabase.getInstance(app)
+    private val repo: OrderRepository = OrderRepositoryImpl(db.orderDao(), db.cartDao())
     private val session = SessionManager(app)
 
     val orders: StateFlow<List<OrderWithItems>> = session.userId

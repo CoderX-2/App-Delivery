@@ -16,10 +16,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class PaymentViewModel(
-    app: Application,
+class PaymentViewModel(app: Application) : AndroidViewModel(app) {
+
     private val gateway: PaymentGateway = SimulatedPaymentGateway()
-) : AndroidViewModel(app) {
 
     val selectedMethod = MutableStateFlow(PaymentMethod.CARD)
     val isProcessing = MutableStateFlow(false)

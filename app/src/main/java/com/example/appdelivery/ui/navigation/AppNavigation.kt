@@ -25,6 +25,9 @@ import com.example.appdelivery.ui.catalog.MenuScreen
 import com.example.appdelivery.ui.catalog.RestaurantListScreen
 import com.example.appdelivery.ui.catalog.SearchScreen
 import com.example.appdelivery.ui.catalog.SearchViewModel
+import com.example.appdelivery.ui.courier.CourierHomeScreen
+import com.example.appdelivery.ui.courier.CourierRegisterScreen
+import com.example.appdelivery.ui.courier.CourierViewModel
 import com.example.appdelivery.ui.map.MapScreen
 import com.example.appdelivery.ui.map.MapViewModel
 import com.example.appdelivery.ui.order.OrderDetailScreen
@@ -59,6 +62,8 @@ object Routes {
     const val ADDRESS_FORM = "address_form?addressId={addressId}"
     fun addressForm(id: Long? = null) =
         if (id == null) "address_form" else "address_form?addressId=$id"
+    const val COURIER_HOME = "courier_home"
+    const val COURIER_REGISTER = "courier_register"
 }
 
 @Composable
@@ -73,10 +78,18 @@ fun AppNavigation() {
     val cartVm: CartViewModel = viewModel()
     val paymentVm: PaymentViewModel = viewModel()
     val orderVm: OrderViewModel = viewModel()
+    val courierVm: CourierViewModel = viewModel()
     var startDestination by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
-        startDestination = if (session.userId.first() != null) Routes.PROFILE else Routes.LOGIN
+        val role = session.role.first()
+        val userId = session.userId.first()
+        val courierId = session.courierId.first()
+        startDestination = when {
+            role == "COURIER" || courierId != null -> Routes.COURIER_HOME
+            role == "CUSTOMER" || userId != null -> Routes.PROFILE
+            else -> Routes.LOGIN
+        }
     }
 
     val start = startDestination ?: return
@@ -88,7 +101,12 @@ fun AppNavigation() {
                 onLoginSuccess = {
                     nav.navigate(Routes.PROFILE) { popUpTo(Routes.LOGIN) { inclusive = true } }
                 },
-                onGoToRegister = { nav.navigate(Routes.REGISTER) }
+                onGoToRegister = { nav.navigate(Routes.REGISTER) },
+                onCourierLoginSuccess = {
+                    nav.navigate(Routes.COURIER_HOME) { popUpTo(Routes.LOGIN) { inclusive = true } }
+                },
+                onGoToCourierRegister = { nav.navigate(Routes.COURIER_REGISTER) },
+                courierVm = courierVm
             )
         }
         composable(Routes.REGISTER) {
@@ -97,6 +115,29 @@ fun AppNavigation() {
                     nav.navigate(Routes.PROFILE) { popUpTo(Routes.LOGIN) { inclusive = true } }
                 },
                 onBack = { nav.popBackStack() }
+            )
+        }
+        composable(Routes.COURIER_REGISTER) {
+            CourierRegisterScreen(
+                vm = courierVm,
+                onRegisterSuccess = {
+                    nav.navigate(Routes.COURIER_HOME) { popUpTo(Routes.LOGIN) { inclusive = true } }
+                },
+                onBack = { nav.popBackStack() }
+            )
+        }
+        composable(Routes.COURIER_HOME) {
+            CourierHomeScreen(
+                vm = courierVm,
+                onOpenAvailableOrders = {
+                    // Se conecta en AD-18
+                },
+                onLogout = {
+                    scope.launch {
+                        session.clear()
+                        nav.navigate(Routes.LOGIN) { popUpTo(0) }
+                    }
+                }
             )
         }
         composable(Routes.PROFILE) {

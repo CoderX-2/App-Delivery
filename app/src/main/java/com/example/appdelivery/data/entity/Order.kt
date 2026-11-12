@@ -11,7 +11,8 @@ import com.example.appdelivery.data.model.DeliveryMode
 enum class OrderStatus(val displayName: String) {
     PENDING("Pendiente de preparación"),
     PREPARING("En preparación"),
-    IN_DELIVERY("En camino"),
+    PICKED_UP("Recogido en sucursal"),
+    IN_DELIVERY("En camino al domicilio"),
     DELIVERED("Entregado"),
     CANCELLED("Cancelado")
 }
@@ -24,11 +25,12 @@ enum class OrderStatus(val displayName: String) {
         childColumns = ["customerId"],
         onDelete = ForeignKey.CASCADE
     )],
-    indices = [Index("customerId")]
+    indices = [Index("customerId"), Index("courierId")]
 )
 data class Order(
     @PrimaryKey val id: String, // UUID
     val customerId: Long,
+    val courierId: Long? = null, // Relación con el repartidor asignado (AD-96)
     val restaurantId: Long,
     val restaurantName: String,
     val deliveryMode: DeliveryMode,

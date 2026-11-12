@@ -1,5 +1,9 @@
 package com.example.appdelivery.data.db
 
+import com.example.appdelivery.data.dao.CourierDao
+import com.example.appdelivery.data.entity.Courier
+
+
 import com.example.appdelivery.data.dao.OrderDao
 import com.example.appdelivery.data.entity.Order
 import com.example.appdelivery.data.entity.OrderItem
@@ -24,11 +28,13 @@ import com.example.appdelivery.data.entity.Restaurant
 import com.example.appdelivery.util.PasswordHasher
 
 @Database(
-    entities = [Order::class, OrderItem::class, CartItem::class, Customer::class, Address::class, Restaurant::class, Dish::class],
-    version = 5,
+    entities = [Courier::class, Order::class, OrderItem::class, CartItem::class, Customer::class, Address::class, Restaurant::class, Dish::class],
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
+    abstract fun courierDao(): CourierDao
+
     abstract fun orderDao(): OrderDao
 
     abstract fun cartDao(): CartDao
@@ -126,6 +132,12 @@ abstract class AppDatabase : RoomDatabase() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 val salt = PasswordHasher.generateSalt()
                 val hash = PasswordHasher.hash("123456", salt)
+                val cSalt = PasswordHasher.generateSalt()
+                val cHash = PasswordHasher.hash("123456", cSalt)
+                db.execSQL(
+                    "INSERT INTO couriers (name, email, phone, vehicleType, isAvailable, passwordHash, salt) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    arrayOf("Repartidor Demo", "repartidor@delivery.com", "5598765432", "MOTORCYCLE", 1, cHash, cSalt)
+                )
                 db.execSQL(
                     "INSERT INTO customers (name, email, phone, passwordHash, salt) VALUES (?, ?, ?, ?, ?)",
                     arrayOf("Cliente Demo", "demo@delivery.com", "5512345678", hash, salt)

@@ -10,11 +10,16 @@ import com.example.appdelivery.data.courier.CourierRepository
 import com.example.appdelivery.data.courier.CourierRepositoryImpl
 import com.example.appdelivery.data.db.AppDatabase
 import com.example.appdelivery.data.entity.Courier
+import com.example.appdelivery.data.entity.OrderWithItems
 import com.example.appdelivery.data.entity.VehicleType
+import com.example.appdelivery.data.repository.OrderRepository
+import com.example.appdelivery.data.repository.OrderRepositoryImpl
 import com.example.appdelivery.data.session.SessionManager
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
@@ -23,12 +28,22 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoroutinesApi::class)
 class CourierViewModel(app: Application) : AndroidViewModel(app) {
     private val db = AppDatabase.getInstance(app)
-    private val repo: CourierRepository = CourierRepositoryImpl(db.courierDao())
+    private val courierRepo: CourierRepository = CourierRepositoryImpl(db.courierDao())
+    private val orderRepo: OrderRepository = OrderRepositoryImpl(db.orderDao(), db.cartDao())
     private val session = SessionManager(app)
 
     val currentCourier: StateFlow<Courier?> = session.courierId
-        .flatMapLatest { id -> if (id == null) flowOf(null) else repo.observeCourier(id) }
+        .flatMapLatest { id -> if (id == null) flowOf(null) else courierRepo.observeCourier(id) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val availableOrders: StateFlow<List<OrderWithItems>> = orderRepo.observeAvailableOrders()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val assignedOrders: StateFlow<List<OrderWithItems>> = session.courierId
+        .flatMapLatest { id -> if (id == null) flowOf(emptyList()) else orderRepo.observeAssignedOrders(id) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val orderActionMessage = MutableStateFlow<String?>(null)
 
     var formErrors by mutableStateOf<Map<String, String>>(emptyMap())
         private set
@@ -42,6 +57,10 @@ class CourierViewModel(app: Application) : AndroidViewModel(app) {
         errorMessage = null
     }
 
+    fun clearActionMessage() {
+        orderActionMessage.value = null
+    }
+
     fun login(email: String, pass: String, onSuccess: () -> Unit) {
         clearErrors()
         if (email.isBlank() || pass.isBlank()) {
@@ -50,7 +69,7 @@ class CourierViewModel(app: Application) : AndroidViewModel(app) {
         }
         viewModelScope.launch {
             isLoading = true
-            val res = repo.login(email, pass)
+            val res = courierRepo.login(email, pass)
             isLoading = false
             res.onSuccess { courier ->
                 session.saveCourier(courier.id)
@@ -79,7 +98,7 @@ class CourierViewModel(app: Application) : AndroidViewModel(app) {
 
         viewModelScope.launch {
             isLoading = true
-            val res = repo.register(name, email, phone, vehicleType, pass)
+            val res = courierRepo.register(name, email, phone, vehicleType, pass)
             isLoading = false
             res.onSuccess { id ->
                 session.saveCourier(id)
@@ -93,7 +112,21 @@ class CourierViewModel(app: Application) : AndroidViewModel(app) {
     fun setAvailability(isAvailable: Boolean) {
         val courier = currentCourier.value ?: return
         viewModelScope.launch {
-            repo.setAvailability(courier.id, isAvailable)
+            courierRepo.setAvailability(courier.id, isAvailable)
+        }
+    }
+
+    // Aceptación de pedidos con prevención de doble asignación (AD-98)
+    fun acceptOrder(orderId: String, onAccepted: () -> Unit) {
+        viewModelScope.launch {
+            val courierId = session.courierId.first() ?: return@launch
+            val success = orderRepo.acceptOrder(orderId, courierId)
+            if (success) {
+                orderActionMessage.value = "¡Pedido aceptado! Ahora puedes recogerlo."
+                onAccepted()
+            } else {
+                orderActionMessage.value = "Lo sentimos, otro repartidor ya tomó este pedido."
+            }
         }
     }
 

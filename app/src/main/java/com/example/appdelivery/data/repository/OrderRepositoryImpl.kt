@@ -14,7 +14,7 @@ class OrderRepositoryImpl(
 
     override suspend fun placeOrder(order: Order, items: List<OrderItem>): String {
         orderDao.insertFullOrder(order, items)
-        cartDao.clear() // Vacía el carrito atómicamente tras registrar el pedido (AD-86)
+        cartDao.clear()
         return order.id
     }
 
@@ -23,4 +23,19 @@ class OrderRepositoryImpl(
 
     override suspend fun getOrder(orderId: String): OrderWithItems? =
         orderDao.getById(orderId)
+
+    override fun observeAvailableOrders(): Flow<List<OrderWithItems>> =
+        orderDao.observeAvailableOrders()
+
+    override fun observeAssignedOrders(courierId: Long): Flow<List<OrderWithItems>> =
+        orderDao.observeAssignedOrders(courierId)
+
+    override suspend fun acceptOrder(orderId: String, courierId: Long): Boolean {
+        val rowsAffected = orderDao.assignCourier(orderId, courierId)
+        return rowsAffected > 0
+    }
+
+    override suspend fun updateOrderStatus(orderId: String, newStatus: String) {
+        orderDao.updateStatus(orderId, newStatus)
+    }
 }

@@ -34,4 +34,16 @@ interface OrderDao {
 
     @Query("UPDATE orders SET status = :status WHERE id = :orderId")
     suspend fun updateStatus(orderId: String, status: String)
+
+    // Consultas para repartidores (AD-18, AD-24)
+    @Transaction
+    @Query("SELECT * FROM orders WHERE deliveryMode = 'DELIVERY' AND courierId IS NULL AND status IN ('PENDING', 'PREPARING') ORDER BY createdAt DESC")
+    fun observeAvailableOrders(): Flow<List<OrderWithItems>>
+
+    @Transaction
+    @Query("SELECT * FROM orders WHERE courierId = :courierId AND status NOT IN ('DELIVERED', 'CANCELLED') ORDER BY createdAt DESC")
+    fun observeAssignedOrders(courierId: Long): Flow<List<OrderWithItems>>
+
+    @Query("UPDATE orders SET courierId = :courierId, status = 'PREPARING' WHERE id = :orderId AND courierId IS NULL")
+    suspend fun assignCourier(orderId: String, courierId: Long): Int
 }

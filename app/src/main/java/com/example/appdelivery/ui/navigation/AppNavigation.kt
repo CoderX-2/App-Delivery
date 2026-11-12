@@ -26,6 +26,7 @@ import com.example.appdelivery.ui.catalog.RestaurantListScreen
 import com.example.appdelivery.ui.catalog.SearchScreen
 import com.example.appdelivery.ui.catalog.SearchViewModel
 import com.example.appdelivery.ui.courier.CourierHomeScreen
+import com.example.appdelivery.ui.courier.AvailableOrdersScreen
 import com.example.appdelivery.ui.courier.CourierRegisterScreen
 import com.example.appdelivery.ui.courier.CourierViewModel
 import com.example.appdelivery.ui.map.MapScreen
@@ -64,6 +65,7 @@ object Routes {
         if (id == null) "address_form" else "address_form?addressId=$id"
     const val COURIER_HOME = "courier_home"
     const val COURIER_REGISTER = "courier_register"
+    const val COURIER_ORDERS = "courier_orders"
 }
 
 @Composable
@@ -130,7 +132,7 @@ fun AppNavigation() {
             CourierHomeScreen(
                 vm = courierVm,
                 onOpenAvailableOrders = {
-                    // Se conecta en AD-18
+                    nav.navigate(Routes.COURIER_ORDERS)
                 },
                 onLogout = {
                     scope.launch {
@@ -138,6 +140,15 @@ fun AppNavigation() {
                         nav.navigate(Routes.LOGIN) { popUpTo(0) }
                     }
                 }
+            )
+        }
+        composable(Routes.COURIER_ORDERS) {
+            AvailableOrdersScreen(
+                vm = courierVm,
+                onOrderAccepted = { orderId ->
+                    nav.popBackStack()
+                },
+                onBack = { nav.popBackStack() }
             )
         }
         composable(Routes.PROFILE) {

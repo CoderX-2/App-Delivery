@@ -36,6 +36,9 @@ private class FakeOrderDao : OrderDao {
             orders[idx] = orders[idx].copy(status = OrderStatus.valueOf(status))
         }
     }
+    override fun observeAvailableOrders(): Flow<List<OrderWithItems>> = MutableStateFlow(emptyList())
+    override fun observeAssignedOrders(courierId: Long): Flow<List<OrderWithItems>> = MutableStateFlow(emptyList())
+    override suspend fun assignCourier(orderId: String, courierId: Long): Int = 1
 }
 
 private class FakeCartDaoForOrder : CartDao {
@@ -71,7 +74,7 @@ class OrderRepositoryTest {
         assertEquals("ORD-123", orderId)
         assertEquals(1, orderDao.orders.size)
         assertEquals(1, orderDao.items.size)
-        assertTrue(cartDao.items.isEmpty()) // AD-86: Vaciar carrito
+        assertTrue(cartDao.items.isEmpty())
     }
 
     @Test

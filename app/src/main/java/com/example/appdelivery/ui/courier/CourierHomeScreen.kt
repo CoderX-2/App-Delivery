@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.DeliveryDining
 import androidx.compose.material.icons.filled.TwoWheeler
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -35,10 +36,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun CourierHomeScreen(
     vm: CourierViewModel,
-    onOpenAvailableOrders: () -> Unit = {},
+    onOpenAvailableOrders: () -> Unit,
+    onOpenDeliveryDetail: (String) -> Unit = {},
     onLogout: () -> Unit
 ) {
     val courier by vm.currentCourier.collectAsStateWithLifecycle()
+    val availableOrders by vm.availableOrders.collectAsStateWithLifecycle()
+    val assignedOrders by vm.assignedOrders.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -113,7 +117,7 @@ fun CourierHomeScreen(
                             color = if (isAvail) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = if (isAvail) "Recibirás pedidos en tiempo real" else "No recibirás solicitudes de entrega",
+                            text = if (isAvail) "Recibirás solicitudes de entrega en tiempo real" else "Conéctate para recibir pedidos",
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -124,11 +128,39 @@ fun CourierHomeScreen(
                 }
             }
 
+            // Entregas activas asignadas a este repartidor
+            if (assignedOrders.isNotEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+                ) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.DeliveryDining, contentDescription = null)
+                            Text(" Entrega en curso", style = MaterialTheme.typography.titleMedium)
+                        }
+                        val active = assignedOrders.first()
+                        Text("Pedido #${active.order.id} · ${active.order.restaurantName}", style = MaterialTheme.typography.bodyMedium)
+                        Text("Estado actual: ${active.order.status.displayName}", style = MaterialTheme.typography.labelMedium)
+                        Button(
+                            onClick = { onOpenDeliveryDetail(active.order.id) },
+                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                        ) {
+                            Text("Gestionar entrega")
+                        }
+                    }
+                }
+            }
+
+            // Pedidos disponibles
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Gestión de entregas", style = MaterialTheme.typography.titleMedium)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Pedidos disponibles", style = MaterialTheme.typography.titleMedium)
+                        Text("${availableOrders.size} listos", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                    }
                     Text(
-                        "Consulta los pedidos listos en restaurantes para aceptar entregas y actualizar su estado en tiempo real.",
+                        "Hay pedidos listos en restaurantes esperando repartidor.",
                         style = MaterialTheme.typography.bodySmall
                     )
                     Button(
@@ -136,7 +168,7 @@ fun CourierHomeScreen(
                         enabled = isAvail,
                         modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
                     ) {
-                        Text(if (isAvail) "Ver pedidos disponibles" else "Conéctate para ver pedidos")
+                        Text(if (isAvail) "Ver pedidos disponibles (${availableOrders.size})" else "Conéctate para ver pedidos")
                     }
                 }
             }

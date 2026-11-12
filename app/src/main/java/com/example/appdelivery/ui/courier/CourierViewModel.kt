@@ -16,6 +16,9 @@ import com.example.appdelivery.data.entity.VehicleType
 import com.example.appdelivery.data.repository.OrderRepository
 import com.example.appdelivery.data.repository.OrderRepositoryImpl
 import com.example.appdelivery.data.session.SessionManager
+import com.example.appdelivery.util.CourierEarningsCalculator
+import com.example.appdelivery.util.CourierEarningsSummary
+import kotlinx.coroutines.flow.map
 import com.example.appdelivery.util.NotificationHelper
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,6 +47,15 @@ class CourierViewModel(app: Application) : AndroidViewModel(app) {
     val assignedOrders: StateFlow<List<OrderWithItems>> = session.courierId
         .flatMapLatest { id -> if (id == null) flowOf(emptyList()) else orderRepo.observeAssignedOrders(id) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    
+    val completedDeliveries: StateFlow<List<OrderWithItems>> = session.courierId
+        .flatMapLatest { id -> if (id == null) flowOf(emptyList()) else orderRepo.observeCompletedDeliveries(id) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val earningsSummary: StateFlow<CourierEarningsSummary> = completedDeliveries
+        .map { list -> CourierEarningsCalculator.calculate(list.map { it.order }) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CourierEarningsSummary(0.0, 0.0, 0.0, 0))
 
     val orderActionMessage = MutableStateFlow<String?>(null)
 

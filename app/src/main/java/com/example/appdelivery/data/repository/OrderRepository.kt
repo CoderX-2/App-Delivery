@@ -14,6 +14,7 @@ interface OrderRepository {
     
     fun observeAvailableOrders(): Flow<List<OrderWithItems>>
     fun observeAssignedOrders(courierId: Long): Flow<List<OrderWithItems>>
+    fun observeCompletedDeliveries(courierId: Long): Flow<List<OrderWithItems>>
     suspend fun acceptOrder(orderId: String, courierId: Long): Boolean
     suspend fun updateOrderStatus(orderId: String, newStatus: String)
     

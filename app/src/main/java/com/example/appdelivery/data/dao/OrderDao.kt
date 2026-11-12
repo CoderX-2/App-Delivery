@@ -47,6 +47,10 @@ interface OrderDao {
     @Query("SELECT * FROM orders WHERE courierId = :courierId AND status NOT IN ('DELIVERED', 'CANCELLED') ORDER BY createdAt DESC")
     fun observeAssignedOrders(courierId: Long): Flow<List<OrderWithItems>>
 
+    @Transaction
+    @Query("SELECT * FROM orders WHERE courierId = :courierId AND status = 'DELIVERED' ORDER BY createdAt DESC")
+    fun observeCompletedDeliveries(courierId: Long): Flow<List<OrderWithItems>>
+
     @Query("UPDATE orders SET courierId = :courierId, status = 'PREPARING' WHERE id = :orderId AND courierId IS NULL")
     suspend fun assignCourier(orderId: String, courierId: Long): Int
 }

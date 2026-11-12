@@ -38,6 +38,9 @@ class OrderRepositoryImpl(
     override fun observeAssignedOrders(courierId: Long): Flow<List<OrderWithItems>> =
         orderDao.observeAssignedOrders(courierId)
 
+    override fun observeCompletedDeliveries(courierId: Long): Flow<List<OrderWithItems>> =
+        orderDao.observeCompletedDeliveries(courierId)
+
     override suspend fun acceptOrder(orderId: String, courierId: Long): Boolean {
         val rowsAffected = orderDao.assignCourier(orderId, courierId)
         return rowsAffected > 0

@@ -38,6 +38,7 @@ fun CourierHomeScreen(
     vm: CourierViewModel,
     onOpenAvailableOrders: () -> Unit,
     onOpenDeliveryDetail: (String) -> Unit = {},
+    onOpenEarnings: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     val courier by vm.currentCourier.collectAsStateWithLifecycle()
@@ -169,6 +170,27 @@ fun CourierHomeScreen(
                         modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
                     ) {
                         Text(if (isAvail) "Ver pedidos disponibles (${availableOrders.size})" else "Conéctate para ver pedidos")
+                    }
+                }
+            }
+
+            
+            // Resumen de Ganancias (AD-134)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onOpenEarnings
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("Mis Ganancias", style = MaterialTheme.typography.titleMedium)
+                        Text("Consulta tus ingresos de hoy, semana y desglose", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Button(onClick = onOpenEarnings) {
+                        Text("Ver")
                     }
                 }
             }

@@ -27,6 +27,7 @@ import com.example.appdelivery.ui.catalog.SearchScreen
 import com.example.appdelivery.ui.catalog.SearchViewModel
 import com.example.appdelivery.ui.courier.AvailableOrdersScreen
 import com.example.appdelivery.ui.courier.CourierHomeScreen
+import com.example.appdelivery.ui.courier.CourierEarningsScreen
 import com.example.appdelivery.ui.courier.CourierRegisterScreen
 import com.example.appdelivery.ui.courier.CourierViewModel
 import com.example.appdelivery.ui.courier.DeliveryDetailScreen
@@ -71,6 +72,7 @@ object Routes {
     const val COURIER_HOME = "courier_home"
     const val COURIER_REGISTER = "courier_register"
     const val COURIER_ORDERS = "courier_orders"
+    const val COURIER_EARNINGS = "courier_earnings"
     const val COURIER_DELIVERY = "courier_delivery/{orderId}"
     fun courierDelivery(orderId: String) = "courier_delivery/$orderId"
 }
@@ -145,12 +147,21 @@ fun AppNavigation() {
                 onOpenDeliveryDetail = { orderId ->
                     nav.navigate(Routes.courierDelivery(orderId))
                 },
+                onOpenEarnings = {
+                    nav.navigate(Routes.COURIER_EARNINGS)
+                },
                 onLogout = {
                     scope.launch {
                         session.clear()
                         nav.navigate(Routes.LOGIN) { popUpTo(0) }
                     }
                 }
+            )
+        }
+        composable(Routes.COURIER_EARNINGS) {
+            CourierEarningsScreen(
+                vm = courierVm,
+                onBack = { nav.popBackStack() }
             )
         }
         composable(Routes.COURIER_ORDERS) {

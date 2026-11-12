@@ -40,6 +40,7 @@ private class FakeOrderDaoForReview : OrderDao {
     override suspend fun updateStatus(orderId: String, status: String) {}
     override fun observeAvailableOrders(): Flow<List<OrderWithItems>> = MutableStateFlow(emptyList())
     override fun observeAssignedOrders(courierId: Long): Flow<List<OrderWithItems>> = MutableStateFlow(emptyList())
+    override fun observeCompletedDeliveries(courierId: Long): Flow<List<OrderWithItems>> = MutableStateFlow(emptyList())
     override suspend fun assignCourier(orderId: String, courierId: Long): Int = 1
 }
 

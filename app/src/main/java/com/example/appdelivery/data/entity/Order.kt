@@ -8,14 +8,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.example.appdelivery.data.model.DeliveryMode
 
-enum class OrderStatus(val displayName: String) {
-    PENDING("Pendiente de preparación"),
-    PREPARING("En preparación"),
-    PICKED_UP("Recogido en sucursal"),
-    IN_DELIVERY("En camino al domicilio"),
-    DELIVERED("Entregado"),
-    CANCELLED("Cancelado")
-}
+
 
 @Entity(
     tableName = "orders",

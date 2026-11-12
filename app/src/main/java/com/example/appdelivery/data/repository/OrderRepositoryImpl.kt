@@ -24,6 +24,9 @@ class OrderRepositoryImpl(
     override suspend fun getOrder(orderId: String): OrderWithItems? =
         orderDao.getById(orderId)
 
+    override fun observeOrder(orderId: String): Flow<OrderWithItems?> =
+        orderDao.observeById(orderId)
+
     override fun observeAvailableOrders(): Flow<List<OrderWithItems>> =
         orderDao.observeAvailableOrders()
 

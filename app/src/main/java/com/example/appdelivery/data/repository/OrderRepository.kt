@@ -9,8 +9,8 @@ interface OrderRepository {
     suspend fun placeOrder(order: Order, items: List<OrderItem>): String
     fun observeOrders(customerId: Long): Flow<List<OrderWithItems>>
     suspend fun getOrder(orderId: String): OrderWithItems?
+    fun observeOrder(orderId: String): Flow<OrderWithItems?>
     
-    // Repartidores (AD-18, AD-24)
     fun observeAvailableOrders(): Flow<List<OrderWithItems>>
     fun observeAssignedOrders(courierId: Long): Flow<List<OrderWithItems>>
     suspend fun acceptOrder(orderId: String, courierId: Long): Boolean

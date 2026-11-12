@@ -10,6 +10,7 @@ import com.example.appdelivery.data.courier.CourierRepository
 import com.example.appdelivery.data.courier.CourierRepositoryImpl
 import com.example.appdelivery.data.db.AppDatabase
 import com.example.appdelivery.data.entity.Courier
+import com.example.appdelivery.data.entity.OrderStatus
 import com.example.appdelivery.data.entity.OrderWithItems
 import com.example.appdelivery.data.entity.VehicleType
 import com.example.appdelivery.data.repository.OrderRepository
@@ -116,7 +117,6 @@ class CourierViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // Aceptación de pedidos con prevención de doble asignación (AD-98)
     fun acceptOrder(orderId: String, onAccepted: () -> Unit) {
         viewModelScope.launch {
             val courierId = session.courierId.first() ?: return@launch
@@ -127,6 +127,14 @@ class CourierViewModel(app: Application) : AndroidViewModel(app) {
             } else {
                 orderActionMessage.value = "Lo sentimos, otro repartidor ya tomó este pedido."
             }
+        }
+    }
+
+    fun advanceOrderStatus(orderId: String, currentStatus: OrderStatus) {
+        val next = currentStatus.nextDeliveryStatus() ?: return
+        viewModelScope.launch {
+            orderRepo.updateOrderStatus(orderId, next.name)
+            orderActionMessage.value = "Estado actualizado a: ${next.displayName}"
         }
     }
 

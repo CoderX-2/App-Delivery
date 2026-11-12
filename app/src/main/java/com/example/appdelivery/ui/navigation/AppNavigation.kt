@@ -26,6 +26,7 @@ import com.example.appdelivery.ui.catalog.RestaurantListScreen
 import com.example.appdelivery.ui.catalog.SearchScreen
 import com.example.appdelivery.ui.catalog.SearchViewModel
 import com.example.appdelivery.ui.courier.CourierHomeScreen
+import com.example.appdelivery.ui.courier.DeliveryDetailScreen
 import com.example.appdelivery.ui.courier.AvailableOrdersScreen
 import com.example.appdelivery.ui.courier.CourierRegisterScreen
 import com.example.appdelivery.ui.courier.CourierViewModel
@@ -66,6 +67,8 @@ object Routes {
     const val COURIER_HOME = "courier_home"
     const val COURIER_REGISTER = "courier_register"
     const val COURIER_ORDERS = "courier_orders"
+    const val COURIER_DELIVERY = "courier_delivery/{orderId}"
+    fun courierDelivery(orderId: String) = "courier_delivery/$orderId"
 }
 
 @Composable
@@ -134,6 +137,9 @@ fun AppNavigation() {
                 onOpenAvailableOrders = {
                     nav.navigate(Routes.COURIER_ORDERS)
                 },
+                onOpenDeliveryDetail = { orderId ->
+                    nav.navigate(Routes.courierDelivery(orderId))
+                },
                 onLogout = {
                     scope.launch {
                         session.clear()
@@ -146,8 +152,22 @@ fun AppNavigation() {
             AvailableOrdersScreen(
                 vm = courierVm,
                 onOrderAccepted = { orderId ->
-                    nav.popBackStack()
+                    nav.navigate(Routes.courierDelivery(orderId)) {
+                        popUpTo(Routes.COURIER_HOME)
+                    }
                 },
+                onBack = { nav.popBackStack() }
+            )
+        }
+        composable(
+            route = Routes.COURIER_DELIVERY,
+            arguments = listOf(navArgument("orderId") { type = NavType.StringType })
+        ) { entry ->
+            val id = entry.arguments?.getString("orderId") ?: return@composable
+            DeliveryDetailScreen(
+                orderId = id,
+                courierVm = courierVm,
+                orderVm = orderVm,
                 onBack = { nav.popBackStack() }
             )
         }

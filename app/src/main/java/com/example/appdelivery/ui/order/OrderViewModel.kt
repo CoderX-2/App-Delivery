@@ -95,4 +95,5 @@ class OrderViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     suspend fun getOrder(orderId: String): OrderWithItems? = repo.getOrder(orderId)
+    fun observeOrder(orderId: String) = repo.observeOrder(orderId)
 }

@@ -32,10 +32,13 @@ interface OrderDao {
     @Query("SELECT * FROM orders WHERE id = :orderId LIMIT 1")
     suspend fun getById(orderId: String): OrderWithItems?
 
+    @Transaction
+    @Query("SELECT * FROM orders WHERE id = :orderId LIMIT 1")
+    fun observeById(orderId: String): Flow<OrderWithItems?>
+
     @Query("UPDATE orders SET status = :status WHERE id = :orderId")
     suspend fun updateStatus(orderId: String, status: String)
 
-    // Consultas para repartidores (AD-18, AD-24)
     @Transaction
     @Query("SELECT * FROM orders WHERE deliveryMode = 'DELIVERY' AND courierId IS NULL AND status IN ('PENDING', 'PREPARING') ORDER BY createdAt DESC")
     fun observeAvailableOrders(): Flow<List<OrderWithItems>>

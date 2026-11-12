@@ -31,6 +31,7 @@ private class FakeOrderDaoForAssignment : OrderDao {
     override suspend fun getById(orderId: String): OrderWithItems? = orders.firstOrNull { it.id == orderId }?.let { OrderWithItems(it, emptyList()) }
     override suspend fun updateStatus(orderId: String, status: String) {}
 
+    override fun observeById(orderId: String): Flow<OrderWithItems?> = MutableStateFlow(orders.firstOrNull { it.id == orderId }?.let { OrderWithItems(it, emptyList()) })
     override fun observeAvailableOrders(): Flow<List<OrderWithItems>> = availableFlow
     override fun observeAssignedOrders(courierId: Long): Flow<List<OrderWithItems>> = MutableStateFlow(emptyList())
 

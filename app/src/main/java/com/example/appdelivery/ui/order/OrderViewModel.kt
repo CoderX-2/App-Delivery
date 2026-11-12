@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 class OrderViewModel(app: Application) : AndroidViewModel(app) {
 
     private val db = AppDatabase.getInstance(app)
-    private val repo: OrderRepository = OrderRepositoryImpl(db.orderDao(), db.cartDao())
+    private val repo: OrderRepository = OrderRepositoryImpl(db.orderDao(), db.cartDao(), db.refundDao())
     private val session = SessionManager(app)
 
     val orders: StateFlow<List<OrderWithItems>> = session.userId
@@ -95,5 +95,19 @@ class OrderViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     suspend fun getOrder(orderId: String): OrderWithItems? = repo.getOrder(orderId)
+    
+    fun cancelOrder(orderId: String, reason: String, onCancelled: (String) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            val res = repo.cancelOrder(orderId, reason)
+            res.onSuccess { code ->
+                onCancelled(code)
+            }.onFailure {
+                onError(it.message ?: "No se pudo cancelar el pedido")
+            }
+        }
+    }
+
+    suspend fun getRefund(orderId: String) = repo.getRefund(orderId)
+
     fun observeOrder(orderId: String) = repo.observeOrder(orderId)
 }

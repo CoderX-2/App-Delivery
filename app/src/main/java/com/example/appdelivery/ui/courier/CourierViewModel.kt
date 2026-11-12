@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 class CourierViewModel(app: Application) : AndroidViewModel(app) {
     private val db = AppDatabase.getInstance(app)
     private val courierRepo: CourierRepository = CourierRepositoryImpl(db.courierDao())
-    private val orderRepo: OrderRepository = OrderRepositoryImpl(db.orderDao(), db.cartDao())
+    private val orderRepo: OrderRepository = OrderRepositoryImpl(db.orderDao(), db.cartDao(), db.refundDao())
     private val session = SessionManager(app)
 
     val currentCourier: StateFlow<Courier?> = session.courierId

@@ -25,11 +25,11 @@ import com.example.appdelivery.ui.catalog.MenuScreen
 import com.example.appdelivery.ui.catalog.RestaurantListScreen
 import com.example.appdelivery.ui.catalog.SearchScreen
 import com.example.appdelivery.ui.catalog.SearchViewModel
-import com.example.appdelivery.ui.courier.CourierHomeScreen
-import com.example.appdelivery.ui.courier.DeliveryDetailScreen
 import com.example.appdelivery.ui.courier.AvailableOrdersScreen
+import com.example.appdelivery.ui.courier.CourierHomeScreen
 import com.example.appdelivery.ui.courier.CourierRegisterScreen
 import com.example.appdelivery.ui.courier.CourierViewModel
+import com.example.appdelivery.ui.courier.DeliveryDetailScreen
 import com.example.appdelivery.ui.map.MapScreen
 import com.example.appdelivery.ui.map.MapViewModel
 import com.example.appdelivery.ui.order.OrderDetailScreen
@@ -42,6 +42,8 @@ import com.example.appdelivery.ui.profile.AddressFormScreen
 import com.example.appdelivery.ui.profile.EditProfileScreen
 import com.example.appdelivery.ui.profile.ProfileScreen
 import com.example.appdelivery.ui.profile.ProfileViewModel
+import com.example.appdelivery.ui.review.RateOrderScreen
+import com.example.appdelivery.ui.review.ReviewViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -59,6 +61,8 @@ object Routes {
     const val ORDERS = "orders"
     const val ORDER_DETAIL = "order_detail/{orderId}"
     fun orderDetail(orderId: String) = "order_detail/$orderId"
+    const val RATE_ORDER = "rate_order/{orderId}"
+    fun rateOrder(orderId: String) = "rate_order/$orderId"
     const val MENU = "menu/{restaurantId}"
     fun menu(id: Long) = "menu/$id"
     const val ADDRESS_FORM = "address_form?addressId={addressId}"
@@ -84,6 +88,7 @@ fun AppNavigation() {
     val paymentVm: PaymentViewModel = viewModel()
     val orderVm: OrderViewModel = viewModel()
     val courierVm: CourierViewModel = viewModel()
+    val reviewVm: ReviewViewModel = viewModel()
     var startDestination by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -289,6 +294,19 @@ fun AppNavigation() {
                 orderVm = orderVm,
                 onOpenOrders = { nav.navigate(Routes.ORDERS) },
                 onGoToHome = { nav.navigate(Routes.RESTAURANTS) { popUpTo(Routes.RESTAURANTS) { inclusive = true } } },
+                onGoToRate = { orderId -> nav.navigate(Routes.rateOrder(orderId)) },
+                onBack = { nav.popBackStack() }
+            )
+        }
+        composable(
+            route = Routes.RATE_ORDER,
+            arguments = listOf(navArgument("orderId") { type = NavType.StringType })
+        ) { entry ->
+            val id = entry.arguments?.getString("orderId") ?: return@composable
+            RateOrderScreen(
+                orderId = id,
+                orderVm = orderVm,
+                reviewVm = reviewVm,
                 onBack = { nav.popBackStack() }
             )
         }

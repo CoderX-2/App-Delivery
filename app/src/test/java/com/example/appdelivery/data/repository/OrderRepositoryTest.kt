@@ -55,10 +55,21 @@ private class FakeCartDaoForOrder : CartDao {
     override suspend fun clear() { items.clear() }
 }
 
+
+private class FakeRefundDaoDummy : com.example.appdelivery.data.dao.RefundDao {
+    val refunds = mutableListOf<com.example.appdelivery.data.entity.RefundRequest>()
+    override suspend fun insert(refund: com.example.appdelivery.data.entity.RefundRequest): Long {
+        refunds.add(refund)
+        return refunds.size.toLong()
+    }
+    override suspend fun findByOrderId(orderId: String): com.example.appdelivery.data.entity.RefundRequest? =
+        refunds.firstOrNull { it.orderId == orderId }
+}
+
 class OrderRepositoryTest {
     private val orderDao = FakeOrderDao()
     private val cartDao = FakeCartDaoForOrder()
-    private val repo = OrderRepositoryImpl(orderDao, cartDao)
+    private val repo = OrderRepositoryImpl(orderDao, cartDao, FakeRefundDaoDummy())
 
     @Test
     fun placeOrder_guardaOrdenYVaciaCarrito() = runTest {

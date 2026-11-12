@@ -62,9 +62,15 @@ private class FakeCartDaoDummy : CartDao {
     override suspend fun clear() {}
 }
 
+
+private class FakeRefundDaoDummy2 : com.example.appdelivery.data.dao.RefundDao {
+    override suspend fun insert(refund: com.example.appdelivery.data.entity.RefundRequest): Long = 1L
+    override suspend fun findByOrderId(orderId: String): com.example.appdelivery.data.entity.RefundRequest? = null
+}
+
 class OrderAssignmentTest {
     private val orderDao = FakeOrderDaoForAssignment()
-    private val repo = OrderRepositoryImpl(orderDao, FakeCartDaoDummy())
+    private val repo = OrderRepositoryImpl(orderDao, FakeCartDaoDummy(), FakeRefundDaoDummy2())
 
     private fun sampleOrder(id: String, courierId: Long? = null) = Order(
         id = id, customerId = 1L, courierId = courierId, restaurantId = 1L,

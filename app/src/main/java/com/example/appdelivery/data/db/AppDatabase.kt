@@ -1,5 +1,11 @@
 package com.example.appdelivery.data.db
 
+import com.example.appdelivery.data.dao.RefundDao
+import com.example.appdelivery.data.dao.ReviewDao
+import com.example.appdelivery.data.entity.RefundRequest
+import com.example.appdelivery.data.entity.Review
+
+
 import com.example.appdelivery.data.dao.CourierDao
 import com.example.appdelivery.data.entity.Courier
 
@@ -28,11 +34,14 @@ import com.example.appdelivery.data.entity.Restaurant
 import com.example.appdelivery.util.PasswordHasher
 
 @Database(
-    entities = [Courier::class, Order::class, OrderItem::class, CartItem::class, Customer::class, Address::class, Restaurant::class, Dish::class],
-    version = 6,
+    entities = [RefundRequest::class, Review::class, Courier::class, Order::class, OrderItem::class, CartItem::class, Customer::class, Address::class, Restaurant::class, Dish::class],
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
+    abstract fun refundDao(): RefundDao
+    abstract fun reviewDao(): ReviewDao
+
     abstract fun courierDao(): CourierDao
 
     abstract fun orderDao(): OrderDao

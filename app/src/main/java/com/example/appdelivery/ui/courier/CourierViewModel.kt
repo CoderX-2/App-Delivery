@@ -16,6 +16,7 @@ import com.example.appdelivery.data.entity.VehicleType
 import com.example.appdelivery.data.repository.OrderRepository
 import com.example.appdelivery.data.repository.OrderRepositoryImpl
 import com.example.appdelivery.data.session.SessionManager
+import com.example.appdelivery.util.NotificationHelper
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -134,6 +135,7 @@ class CourierViewModel(app: Application) : AndroidViewModel(app) {
         val next = currentStatus.nextDeliveryStatus() ?: return
         viewModelScope.launch {
             orderRepo.updateOrderStatus(orderId, next.name)
+            NotificationHelper.showOrderNotification(getApplication(), orderId, next)
             orderActionMessage.value = "Estado actualizado a: ${next.displayName}"
         }
     }
